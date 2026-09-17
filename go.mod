@@ -1,3 +1,3 @@
-module github.com/cdvelop/vectordb
+module webtyp.com/vectordb
 
 go 1.26.8
