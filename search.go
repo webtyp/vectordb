@@ -136,6 +136,12 @@ func (s *Store) Search(ctx *context.Context, q Query) ([]Match, error) {
 	return results, nil
 }
 
+// Close flushes the hit counts accumulated by Search, which the read path
+// deliberately keeps in memory so that searching never triggers a write.
+//
+// It does NOT close Config.Conn: that connection was injected, so closing it
+// belongs to whoever opened it. A Store can therefore be closed and reopened
+// over the same backend, and several consumers can share one connection.
 func (s *Store) Close() error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -160,5 +166,11 @@ func (s *Store) Close() error {
 	}
 	s.dirtyHits = nil
 
-	return s.cfg.Conn.Close()
+	// Config.Conn is injected — the caller opened it and the caller closes it.
+	// Closing it here would be taking ownership of something we were lent:
+	// it breaks reopening a Store over the same backend, and it breaks any
+	// caller sharing one Conn across several consumers (agentmemory will hold
+	// its own tables on the same connection). mem.Close() being a no-op hid
+	// this; a real IndexedDB connection does not forgive it.
+	return nil
 }
