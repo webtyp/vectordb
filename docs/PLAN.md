@@ -3,8 +3,9 @@ PLAN: "test: correr la misma suite contra mem y contra indexdb"
 TAG: v0.2.0
 EXECUTOR: unassigned
 REVIEWER: none
-STATUS: running
+STATUS: review
 SESSION: 15163692461147076599
+PR: https://github.com/webtyp/vectordb/pull/2
 ---
 
 > Iteración sobre `webtyp/vectordb` v0.1.0. Índice maestro:
