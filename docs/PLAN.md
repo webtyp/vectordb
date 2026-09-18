@@ -3,6 +3,8 @@ PLAN: "test: correr la misma suite contra mem y contra indexdb"
 TAG: v0.2.0
 EXECUTOR: unassigned
 REVIEWER: none
+STATUS: running
+SESSION: 15163692461147076599
 ---
 
 > Iteración sobre `webtyp/vectordb` v0.1.0. Índice maestro:
