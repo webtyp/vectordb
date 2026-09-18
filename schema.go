@@ -9,9 +9,9 @@ var DocModel = model.Definition{
 	Fields: model.Fields{
 		{Name: "id", Type: model.Text(), DB: &model.FieldDB{PK: true}},
 		{Name: "text", Type: model.Text(), NotNull: true},
-		{Name: "meta", Type: model.Raw()},                  // opaque JSON payload
-		{Name: "tags", Type: model.Text()},                 // "|a|b|c|", LIKE-filterable
-		{Name: "hash", Type: model.Text(), NotNull: true},  // content hash, dedup
+		{Name: "meta", Type: model.Raw()},                 // opaque JSON payload
+		{Name: "tags", Type: model.Text()},                // "|a|b|c|", LIKE-filterable
+		{Name: "hash", Type: model.Text(), NotNull: true}, // content hash, dedup
 		{Name: "created", Type: model.Int(), NotNull: true},
 		{Name: "hits", Type: model.Int(), NotNull: true},
 		{Name: "shard", Type: model.Int(), NotNull: true},

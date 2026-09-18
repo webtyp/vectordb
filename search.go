@@ -104,7 +104,7 @@ func (s *Store) Search(ctx *context.Context, q Query) ([]Match, error) {
 	for _, m := range winning {
 		h := &s.headers[m.ID]
 		h.hits++
-		s.dirtyHits[h.id] = h.hits
+		s.setDirtyHit(h.id, h.hits)
 
 		qDoc := storage.Query{
 			Action:     storage.ActionReadOne,
@@ -140,20 +140,25 @@ func (s *Store) Close() error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	for docID, hits := range s.dirtyHits {
+	for _, dh := range s.dirtyHits {
 		qUpdate := storage.Query{
 			Action:     storage.ActionUpdate,
 			Table:      DocModel.Name,
 			Columns:    []string{"hits"},
-			Values:     []any{int64(hits)},
-			Conditions: []storage.Condition{storage.Eq("id", docID)},
+			Values:     []any{int64(dh.hits)},
+			Conditions: []storage.Condition{storage.Eq("id", dh.docID)},
 		}
 		pUpdate, err := s.cfg.Conn.Compile(qUpdate, &docRecord{})
-		if err == nil {
-			s.cfg.Conn.Exec(pUpdate.Query, pUpdate.Args...)
+		if err != nil {
+			return err
+		}
+		// Flushing hit counts must not mask a real close-time failure: the
+		// caller needs to know if the last write to the backend didn't land.
+		if err := s.cfg.Conn.Exec(pUpdate.Query, pUpdate.Args...); err != nil {
+			return err
 		}
 	}
-	s.dirtyHits = make(map[string]int32)
+	s.dirtyHits = nil
 
 	return s.cfg.Conn.Close()
 }

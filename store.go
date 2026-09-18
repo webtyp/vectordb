@@ -115,7 +115,7 @@ func New(ctx *context.Context, cfg Config) (*Store, error) {
 	}
 	defer shardRows.Close()
 
-	shardsMap := make(map[int64]*shardState)
+	var shardsSlice []*shardState
 	var maxShardID int64
 	for shardRows.Next() {
 		var sr shardRecord
@@ -129,12 +129,12 @@ func New(ctx *context.Context, cfg Config) (*Store, error) {
 			return nil, fmt.Err("vectordb: dimension mismatch in shard ", sr.ID)
 		}
 		dataFloat := bytesToFloat32s(sr.Data)
-		shardsMap[sr.ID] = &shardState{
+		shardsSlice = append(shardsSlice, &shardState{
 			id:    sr.ID,
 			count: int(sr.Count),
 			data:  dataFloat,
 			dirty: false,
-		}
+		})
 		if sr.ID > maxShardID {
 			maxShardID = sr.ID
 		}
@@ -156,24 +156,28 @@ func New(ctx *context.Context, cfg Config) (*Store, error) {
 	}
 	defer docRows.Close()
 
-	docMap := make(map[string]*docRecord)
+	// docs is read already sorted by (shard, slot) — the same order the shard/slot
+	// walk below produces. No map/join structure is needed: both sequences are
+	// sorted the same way, so a single cursor walked forward is a merge-join in
+	// O(N), the join a map would give without needing one.
+	var docs []docRecord
 	for docRows.Next() {
 		var dr docRecord
 		if err := docRows.Scan(&dr.ID, &dr.Text, &dr.Meta, &dr.Tags, &dr.Hash, &dr.Created, &dr.Hits, &dr.Shard, &dr.Slot); err != nil {
 			return nil, err
 		}
-		key := fmt.Sprintf("%d:%d", dr.Shard, dr.Slot)
-		docMap[key] = &dr
+		docs = append(docs, dr)
 	}
 
 	// 4. Build Arena, headers, hashes
 	arena := vector.NewArena(dim, 0)
 	var headers []header
-	hashes := make(map[string]string)
+	var hashes []fmt.KeyValue
+	di := 0
 
 	for sID := int64(1); sID <= maxShardID; sID++ {
-		st, ok := shardsMap[sID]
-		if !ok {
+		st := findShardByID(shardsSlice, sID)
+		if st == nil {
 			continue
 		}
 		for slot := 0; slot < st.count; slot++ {
@@ -182,10 +186,10 @@ func New(ctx *context.Context, cfg Config) (*Store, error) {
 			if err != nil {
 				return nil, err
 			}
-			key := fmt.Sprintf("%d:%d", sID, slot)
-			dr, exists := docMap[key]
-			if exists {
-				hashes[dr.Hash] = dr.ID
+			if di < len(docs) && docs[di].Shard == sID && docs[di].Slot == int64(slot) {
+				dr := docs[di]
+				di++
+				hashes = append(hashes, fmt.KeyValue{Key: dr.Hash, Value: dr.ID})
 				headers = append(headers, header{
 					id:      dr.ID,
 					tags:    dr.Tags,
@@ -210,8 +214,8 @@ func New(ctx *context.Context, cfg Config) (*Store, error) {
 		cfg:       cfg,
 		arena:     arena,
 		headers:   headers,
-		shards:    shardsMap,
+		shards:    shardsSlice,
 		hashes:    hashes,
-		dirtyHits: make(map[string]int32),
+		dirtyHits: nil,
 	}, nil
 }

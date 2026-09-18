@@ -1,6 +1,7 @@
 package vectordb_test
 
 import (
+	"strconv"
 	"strings"
 	"sync"
 	"testing"
@@ -18,11 +19,15 @@ type mockIDGen struct {
 	seq int
 }
 
+// NewID must be collision-free under a tight loop: Add() calls this once per new
+// document in a batch, often faster than the microsecond clock advances, so a
+// timestamp alone repeats. seq is what actually guarantees uniqueness here.
 func (m *mockIDGen) NewID() string {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	m.seq++
-	return strings.ReplaceAll(time.Now().Format("150405.000000"), ".", "")
+	stamp := strings.ReplaceAll(time.Now().Format("150405.000000"), ".", "")
+	return stamp + "-" + strconv.Itoa(m.seq)
 }
 
 type fixedVectorEmbedder struct {

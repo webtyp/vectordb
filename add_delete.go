@@ -46,8 +46,11 @@ func (s *Store) Add(ctx *context.Context, docs ...Doc) ([]string, error) {
 
 	for _, doc := range docs {
 		hStr := hashText(doc.Text)
-		if _, exists := s.hashes[hStr]; exists {
-			continue // deduplicate by hash
+		if _, exists := s.docIDByHash(hStr); exists {
+			continue // already in the corpus
+		}
+		if containsString(newHashes, hStr) {
+			continue // duplicate within this same batch
 		}
 		if doc.ID == "" {
 			doc.ID = s.cfg.IDGen.NewID()
@@ -89,9 +92,9 @@ func (s *Store) Add(ctx *context.Context, docs ...Doc) ([]string, error) {
 	// Find or create active shard
 	var activeShard *shardState
 	var maxShardID int64
-	for id, st := range s.shards {
-		if id > maxShardID {
-			maxShardID = id
+	for _, st := range s.shards {
+		if st.id > maxShardID {
+			maxShardID = st.id
 		}
 		if st.count < s.cfg.ShardSize && activeShard == nil {
 			activeShard = st
@@ -108,7 +111,7 @@ func (s *Store) Add(ctx *context.Context, docs ...Doc) ([]string, error) {
 				data:  nil,
 				dirty: true,
 			}
-			s.shards[maxShardID] = activeShard
+			s.shards = append(s.shards, activeShard)
 		}
 
 		slot := activeShard.count
@@ -133,7 +136,7 @@ func (s *Store) Add(ctx *context.Context, docs ...Doc) ([]string, error) {
 			hash:    newHashes[i],
 		}
 		s.headers = append(s.headers, h)
-		s.hashes[newHashes[i]] = doc.ID
+		s.setHash(newHashes[i], doc.ID)
 
 		dr := docRecord{
 			ID:      doc.ID,
@@ -216,15 +219,19 @@ func (s *Store) Add(ctx *context.Context, docs ...Doc) ([]string, error) {
 		st.dirty = false
 	}
 
+	// Eviction must run BEFORE Commit, inside the same transaction (plan: "antes de
+	// confirmar"). exec is the tx-bound executor while tx != nil; calling it again
+	// after Commit would operate on an already-closed IndexedDB transaction -- silently
+	// correct against mem (which does not enforce closure) but broken against a real
+	// backend. Delete() already gets this ordering right; Add() did not.
+	if err := s.evictIfNeeded(exec); err != nil {
+		return nil, err
+	}
+
 	if tx != nil {
 		if err := tx.Commit(); err != nil {
 			return nil, err
 		}
-	}
-
-	// Perform LRU eviction if needed
-	if err := s.evictIfNeeded(exec); err != nil {
-		return nil, err
 	}
 
 	return addedIDs, nil
@@ -238,20 +245,19 @@ func (s *Store) Delete(ctx *context.Context, ids ...string) error {
 		return nil
 	}
 
-	idMap := make(map[string]bool, len(ids))
-	for _, id := range ids {
-		idMap[id] = true
-	}
-
-	affectedShards := make(map[int64]bool)
+	// ids is already the membership list Delete needs — no reason to copy it
+	// into a map just to ask "is this one of them".
+	var affectedShards []int64
 	var deletedIDs []string
 
 	for i := range s.headers {
 		h := &s.headers[i]
-		if !h.deleted && idMap[h.id] {
+		if !h.deleted && containsString(ids, h.id) {
 			h.deleted = true
-			delete(s.hashes, h.hash)
-			affectedShards[h.shard] = true
+			s.deleteHash(h.hash)
+			if !containsInt64(affectedShards, h.shard) {
+				affectedShards = append(affectedShards, h.shard)
+			}
 			deletedIDs = append(deletedIDs, h.id)
 		}
 	}
@@ -287,7 +293,7 @@ func (s *Store) Delete(ctx *context.Context, ids ...string) error {
 		}
 	}
 
-	for sID := range affectedShards {
+	for _, sID := range affectedShards {
 		if err := s.compactIfNeeded(exec, sID); err != nil {
 			return err
 		}
@@ -359,7 +365,7 @@ func (s *Store) evictIfNeeded(exec storage.Executor) error {
 
 		evicted := &s.headers[minIdx]
 		evicted.deleted = true
-		delete(s.hashes, evicted.hash)
+		s.deleteHash(evicted.hash)
 
 		qDel := storage.Query{
 			Action:     storage.ActionDelete,
@@ -385,8 +391,8 @@ func (s *Store) evictIfNeeded(exec storage.Executor) error {
 }
 
 func (s *Store) compactIfNeeded(exec storage.Executor, shardID int64) error {
-	st, ok := s.shards[shardID]
-	if !ok || st.count <= 1 {
+	st := s.shardByID(shardID)
+	if st == nil || st.count <= 1 {
 		return nil
 	}
 
@@ -471,7 +477,7 @@ func (s *Store) rebuildArenaAndHeaders() {
 
 	newArena := vector.NewArena(dim, len(newHeaders))
 	for _, h := range newHeaders {
-		st := s.shards[h.shard]
+		st := s.shardByID(h.shard)
 		v := st.data[h.slot*int64(dim) : (h.slot+1)*int64(dim)]
 		newArena.Append(v)
 	}
