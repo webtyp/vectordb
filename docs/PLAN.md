@@ -3,7 +3,8 @@ PLAN: "feat: webtyp/vectordb — almacén de documentos con recuperación kNN"
 TAG: v0.1.0
 EXECUTOR: unassigned
 REVIEWER: none
-REPO: webtyp/vectordb
+STATUS: running
+SESSION: 1820857937865744300
 ---
 
 > Repositorio nuevo, ya creado.
