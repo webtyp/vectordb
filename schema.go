@@ -40,3 +40,11 @@ var IndexModel = model.Definition{
 		{Name: "version", Type: model.Int(), NotNull: true},
 	},
 }
+
+// Schema returns the model.Model values a DDL-capable backend (indexdb.New,
+// ddl.CreateTable) needs to declare vectordb's three tables/object stores
+// before New is called. storage.Conn is DML-only — table creation is always
+// the caller's responsibility, and this is what a caller names to do it.
+func Schema() []model.Model {
+	return []model.Model{&docRecord{}, &shardRecord{}, &indexRecord{}}
+}

@@ -10,7 +10,6 @@ import (
 	"webtyp.com/context"
 	"webtyp.com/embed"
 	"webtyp.com/storage"
-	"webtyp.com/storage/mem"
 	"webtyp.com/vectordb"
 )
 
@@ -98,9 +97,9 @@ func (t *txRecorderBound) Commit() error {
 	return t.TxBoundExecutor.Commit()
 }
 
-func TestAdd_ThenSearchFindsIt(t *testing.T) {
+func testAdd_ThenSearchFindsIt(t *testing.T, newConn func(t *testing.T) storage.Conn) {
 	ctx := context.Background()
-	conn := mem.New()
+	conn := newConn(t)
 	emb := embed.NewMockEmbedder(16)
 	idg := &mockIDGen{}
 
@@ -142,9 +141,9 @@ func TestAdd_ThenSearchFindsIt(t *testing.T) {
 	}
 }
 
-func TestAdd_DeduplicatesByHash(t *testing.T) {
+func testAdd_DeduplicatesByHash(t *testing.T, newConn func(t *testing.T) storage.Conn) {
 	ctx := context.Background()
-	conn := mem.New()
+	conn := newConn(t)
 	emb := embed.NewMockEmbedder(16)
 	idg := &mockIDGen{}
 
@@ -175,9 +174,9 @@ func TestAdd_DeduplicatesByHash(t *testing.T) {
 	}
 }
 
-func TestAdd_BatchOneTransaction(t *testing.T) {
+func testAdd_BatchOneTransaction(t *testing.T, newConn func(t *testing.T) storage.Conn) {
 	ctx := context.Background()
-	rawConn := mem.New()
+	rawConn := newConn(t)
 	conn := &txRecorderConn{Conn: rawConn}
 	emb := embed.NewMockEmbedder(16)
 	idg := &mockIDGen{}
@@ -215,9 +214,9 @@ func TestAdd_BatchOneTransaction(t *testing.T) {
 	}
 }
 
-func TestSearch_RanksByCosine(t *testing.T) {
+func testSearch_RanksByCosine(t *testing.T, newConn func(t *testing.T) storage.Conn) {
 	ctx := context.Background()
-	conn := mem.New()
+	conn := newConn(t)
 	emb := newFixedVectorEmbedder(3, "fixed")
 	emb.vectors["doc1"] = []float32{1.0, 0.0, 0.0}
 	emb.vectors["doc2"] = []float32{0.70710678, 0.70710678, 0.0}
@@ -257,9 +256,9 @@ func TestSearch_RanksByCosine(t *testing.T) {
 	}
 }
 
-func TestSearch_RespectsK(t *testing.T) {
+func testSearch_RespectsK(t *testing.T, newConn func(t *testing.T) storage.Conn) {
 	ctx := context.Background()
-	conn := mem.New()
+	conn := newConn(t)
 	emb := embed.NewMockEmbedder(16)
 	idg := &mockIDGen{}
 
@@ -289,9 +288,9 @@ func TestSearch_RespectsK(t *testing.T) {
 	}
 }
 
-func TestSearch_IncludeExcludeTags(t *testing.T) {
+func testSearch_IncludeExcludeTags(t *testing.T, newConn func(t *testing.T) storage.Conn) {
 	ctx := context.Background()
-	conn := mem.New()
+	conn := newConn(t)
 	emb := embed.NewMockEmbedder(16)
 	idg := &mockIDGen{}
 
@@ -326,9 +325,9 @@ func TestSearch_IncludeExcludeTags(t *testing.T) {
 	}
 }
 
-func TestSearch_MinScore(t *testing.T) {
+func testSearch_MinScore(t *testing.T, newConn func(t *testing.T) storage.Conn) {
 	ctx := context.Background()
-	conn := mem.New()
+	conn := newConn(t)
 	emb := newFixedVectorEmbedder(3, "fixed")
 	emb.vectors["doc1"] = []float32{1.0, 0.0, 0.0}
 	emb.vectors["doc2"] = []float32{0.0, 1.0, 0.0}
@@ -365,9 +364,9 @@ func TestSearch_MinScore(t *testing.T) {
 	}
 }
 
-func TestSearch_EmptyCorpus(t *testing.T) {
+func testSearch_EmptyCorpus(t *testing.T, newConn func(t *testing.T) storage.Conn) {
 	ctx := context.Background()
-	conn := mem.New()
+	conn := newConn(t)
 	emb := embed.NewMockEmbedder(16)
 	idg := &mockIDGen{}
 
@@ -389,9 +388,9 @@ func TestSearch_EmptyCorpus(t *testing.T) {
 	}
 }
 
-func TestSearch_DoesNotRewriteCorpus(t *testing.T) {
+func testSearch_DoesNotRewriteCorpus(t *testing.T, newConn func(t *testing.T) storage.Conn) {
 	ctx := context.Background()
-	rawConn := mem.New()
+	rawConn := newConn(t)
 	conn := &txRecorderConn{Conn: rawConn}
 	emb := embed.NewMockEmbedder(16)
 	idg := &mockIDGen{}
@@ -421,9 +420,9 @@ func TestSearch_DoesNotRewriteCorpus(t *testing.T) {
 	}
 }
 
-func TestReopen_LoadsIndex(t *testing.T) {
+func testReopen_LoadsIndex(t *testing.T, newConn func(t *testing.T) storage.Conn) {
 	ctx := context.Background()
-	conn := mem.New()
+	conn := newConn(t)
 	emb := embed.NewMockEmbedder(16)
 	idg := &mockIDGen{}
 
@@ -459,9 +458,9 @@ func TestReopen_LoadsIndex(t *testing.T) {
 	}
 }
 
-func TestReopen_ModelMismatchFails(t *testing.T) {
+func testReopen_ModelMismatchFails(t *testing.T, newConn func(t *testing.T) storage.Conn) {
 	ctx := context.Background()
-	conn := mem.New()
+	conn := newConn(t)
 	idg := &mockIDGen{}
 
 	embA := newFixedVectorEmbedder(16, "model_a")
@@ -494,9 +493,9 @@ func TestReopen_ModelMismatchFails(t *testing.T) {
 	}
 }
 
-func TestReopen_DimMismatchFails(t *testing.T) {
+func testReopen_DimMismatchFails(t *testing.T, newConn func(t *testing.T) storage.Conn) {
 	ctx := context.Background()
-	conn := mem.New()
+	conn := newConn(t)
 	idg := &mockIDGen{}
 
 	embA := newFixedVectorEmbedder(16, "model_a")
@@ -526,9 +525,9 @@ func TestReopen_DimMismatchFails(t *testing.T) {
 	}
 }
 
-func TestDelete_RemovesFromResults(t *testing.T) {
+func testDelete_RemovesFromResults(t *testing.T, newConn func(t *testing.T) storage.Conn) {
 	ctx := context.Background()
-	conn := mem.New()
+	conn := newConn(t)
 	emb := embed.NewMockEmbedder(16)
 	idg := &mockIDGen{}
 
@@ -577,9 +576,9 @@ func TestDelete_RemovesFromResults(t *testing.T) {
 	}
 }
 
-func TestEvict_LeastUsedOldestFirst(t *testing.T) {
+func testEvict_LeastUsedOldestFirst(t *testing.T, newConn func(t *testing.T) storage.Conn) {
 	ctx := context.Background()
-	conn := mem.New()
+	conn := newConn(t)
 	emb := embed.NewMockEmbedder(16)
 	idg := &mockIDGen{}
 
@@ -629,9 +628,9 @@ func TestEvict_LeastUsedOldestFirst(t *testing.T) {
 	}
 }
 
-func TestEvict_CompactsShards(t *testing.T) {
+func testEvict_CompactsShards(t *testing.T, newConn func(t *testing.T) storage.Conn) {
 	ctx := context.Background()
-	conn := mem.New()
+	conn := newConn(t)
 	emb := embed.NewMockEmbedder(16)
 	idg := &mockIDGen{}
 
@@ -673,9 +672,9 @@ func TestEvict_CompactsShards(t *testing.T) {
 	}
 }
 
-func TestNew_ReturnsBeforeUse(t *testing.T) {
+func testNew_ReturnsBeforeUse(t *testing.T, newConn func(t *testing.T) storage.Conn) {
 	ctx := context.Background()
-	conn := mem.New()
+	conn := newConn(t)
 	emb := embed.NewMockEmbedder(16)
 	idg := &mockIDGen{}
 
