@@ -15,7 +15,7 @@ require (
 require (
 	webtyp.com/await v0.1.2 // indirect
 	webtyp.com/fetch v0.1.28 // indirect
-	webtyp.com/jsvalue v0.1.4 // indirect
+	webtyp.com/jsvalue v0.1.6 // indirect
 	webtyp.com/tokenizer v0.2.0 // indirect
 	webtyp.com/transformer v0.1.4 // indirect
 	webtyp.com/weights v0.1.0 // indirect
