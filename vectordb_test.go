@@ -46,6 +46,9 @@ func newFixedVectorEmbedder(dim int, id string) *fixedVectorEmbedder {
 func (f *fixedVectorEmbedder) Dim() int   { return f.dim }
 func (f *fixedVectorEmbedder) ID() string { return f.id }
 
+// CountTokens counts one token per text: the store never needs a real count.
+func (f *fixedVectorEmbedder) CountTokens(text string) int { return 1 }
+
 func (f *fixedVectorEmbedder) Embed(ctx *context.Context, texts []string, dst []float32) error {
 	for i, text := range texts {
 		vec, ok := f.vectors[text]
