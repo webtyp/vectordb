@@ -193,7 +193,7 @@ func (s *Store) Add(ctx *context.Context, docs ...Doc) ([]string, error) {
 		scanErr := row.Scan(&existing.ID, &existing.Count, &existing.Data)
 
 		var qShard storage.Query
-		if scanErr == storage.ErrNoRows {
+		if storage.IsNoRows(scanErr) {
 			qShard = storage.Query{
 				Action:  storage.ActionCreate,
 				Table:   ShardModel.Name,
