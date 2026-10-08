@@ -64,7 +64,7 @@ func New(ctx *context.Context, cfg Config) (*Store, error) {
 	var idxRec indexRecord
 	row := cfg.Conn.QueryRow(pIdx.Query, pIdx.Args...)
 	err = row.Scan(&idxRec.ID, &idxRec.Dim, &idxRec.ModelID, &idxRec.ShardSize, &idxRec.Version)
-	if err == storage.ErrNoRows {
+	if storage.IsNoRows(err) {
 		// New corpus: write index row
 		idxRec = indexRecord{
 			ID:        "index",
