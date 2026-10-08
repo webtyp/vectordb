@@ -2,6 +2,8 @@
 PLAN: "fix: detect sentinel errors without == between interfaces (no reflection in wasm)"
 EXECUTOR: jules
 REVIEWER: none
+STATUS: running
+SESSION: 4615445861317163100
 ---
 
 # Plan — `vectordb`: errores centinela sin `==` entre interfaces
