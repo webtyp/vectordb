@@ -8,7 +8,6 @@ import (
 	"testing"
 
 	"webtyp.com/indexdb"
-	"webtyp.com/model"
 	"webtyp.com/storage"
 	"webtyp.com/vectordb"
 )
@@ -20,16 +19,12 @@ func freshDBName(t *testing.T) string {
 	return fmt.Sprintf("testdb_%s_%d", t.Name(), id)
 }
 
-func toAny(models []model.Model) []any {
-	anys := make([]any, len(models))
-	for i, m := range models {
-		anys[i] = m
-	}
-	return anys
-}
-
 func indexdbConn(t *testing.T) storage.Conn {
-	return indexdb.New(freshDBName(t), &mockIDGen{}, nil, toAny(vectordb.Schema())...)
+	conn, err := indexdb.New(freshDBName(t), vectordb.Schema()...)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return conn
 }
 
 func TestIndexDB_Add_ThenSearchFindsIt(t *testing.T)   { testAdd_ThenSearchFindsIt(t, indexdbConn) }
