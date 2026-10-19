@@ -8,7 +8,7 @@ require (
 	webtyp.com/fmt v1.0.0
 	webtyp.com/indexdb v0.7.0
 	webtyp.com/model v0.2.3
-	webtyp.com/storage v0.1.4
+	webtyp.com/storage v0.1.7
 	webtyp.com/vector v0.1.1
 )
 
