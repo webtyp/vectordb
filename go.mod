@@ -6,7 +6,7 @@ require (
 	webtyp.com/context v0.0.23
 	webtyp.com/embed v0.4.0
 	webtyp.com/fmt v1.0.0
-	webtyp.com/indexdb v0.7.0
+	webtyp.com/indexdb v0.7.9
 	webtyp.com/model v0.2.12
 	webtyp.com/storage v0.1.18
 	webtyp.com/vector v0.1.1
