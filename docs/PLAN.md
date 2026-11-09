@@ -2,6 +2,8 @@
 PLAN: "refactor!: Exec reports rows affected and a duplicate key (storage.Result, storage.Duplicate) — vectordb"
 EXECUTOR: jules
 REVIEWER: none
+STATUS: running
+SESSION: 11762738492422963388
 ---
 
 > Read AGENTS.md at the repo root before any change.
