@@ -2,8 +2,10 @@
 PLAN: "refactor!: Exec reports rows affected and a duplicate key (storage.Result, storage.Duplicate) — vectordb"
 EXECUTOR: jules
 REVIEWER: none
-STATUS: completed
+STATUS: review
 SESSION: 11762738492422963388
+PR: https://github.com/webtyp/vectordb/pull/4
+REVIEWED_COMMIT: d89f0490b52b6ca09d291d5da2ff10e34f2da508
 ---
 
 ## Executor notes
