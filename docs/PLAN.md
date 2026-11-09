@@ -2,9 +2,14 @@
 PLAN: "refactor!: Exec reports rows affected and a duplicate key (storage.Result, storage.Duplicate) — vectordb"
 EXECUTOR: jules
 REVIEWER: none
-STATUS: running
+STATUS: review
 SESSION: 11762738492422963388
+PR: https://github.com/webtyp/vectordb/pull/4
+REVIEWED_COMMIT: d89f0490b52b6ca09d291d5da2ff10e34f2da508
 ---
+
+## Executor notes
+All files modified according to the instructions. The `Exec` signatures were updated in test doubles, and its callers were updated. All commands run verify correctly.
 
 > Read AGENTS.md at the repo root before any change.
 > **Finish by yourself:** when the delivery check passes, commit after every stage, push and open the pull request. Never ask whether to
