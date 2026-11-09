@@ -160,7 +160,7 @@ func (s *Store) Add(ctx *context.Context, docs ...Doc) ([]string, error) {
 		if err != nil {
 			return nil, err
 		}
-		if err := exec.Exec(pDoc.Query, pDoc.Args...); err != nil {
+		if _, err := exec.Exec(pDoc.Query, pDoc.Args...); err != nil {
 			return nil, err
 		}
 
@@ -213,7 +213,7 @@ func (s *Store) Add(ctx *context.Context, docs ...Doc) ([]string, error) {
 		if err != nil {
 			return nil, err
 		}
-		if err := exec.Exec(pShard.Query, pShard.Args...); err != nil {
+		if _, err := exec.Exec(pShard.Query, pShard.Args...); err != nil {
 			return nil, err
 		}
 		st.dirty = false
@@ -288,7 +288,7 @@ func (s *Store) Delete(ctx *context.Context, ids ...string) error {
 		if err != nil {
 			return err
 		}
-		if err := exec.Exec(pDel.Query, pDel.Args...); err != nil {
+		if _, err := exec.Exec(pDel.Query, pDel.Args...); err != nil {
 			return err
 		}
 	}
@@ -376,7 +376,7 @@ func (s *Store) evictIfNeeded(exec storage.Executor) error {
 		if err != nil {
 			return err
 		}
-		if err := exec.Exec(pDel.Query, pDel.Args...); err != nil {
+		if _, err := exec.Exec(pDel.Query, pDel.Args...); err != nil {
 			return err
 		}
 
@@ -433,7 +433,7 @@ func (s *Store) compactIfNeeded(exec storage.Executor, shardID int64) error {
 		if err != nil {
 			return err
 		}
-		if err := exec.Exec(pUpdateDoc.Query, pUpdateDoc.Args...); err != nil {
+		if _, err := exec.Exec(pUpdateDoc.Query, pUpdateDoc.Args...); err != nil {
 			return err
 		}
 	}
@@ -457,7 +457,7 @@ func (s *Store) compactIfNeeded(exec storage.Executor, shardID int64) error {
 	if err != nil {
 		return err
 	}
-	if err := exec.Exec(pShard.Query, pShard.Args...); err != nil {
+	if _, err := exec.Exec(pShard.Query, pShard.Args...); err != nil {
 		return err
 	}
 

@@ -2,9 +2,12 @@
 PLAN: "refactor!: Exec reports rows affected and a duplicate key (storage.Result, storage.Duplicate) — vectordb"
 EXECUTOR: jules
 REVIEWER: none
-STATUS: running
+STATUS: completed
 SESSION: 11762738492422963388
 ---
+
+## Executor notes
+All files modified according to the instructions. The `Exec` signatures were updated in test doubles, and its callers were updated. All commands run verify correctly.
 
 > Read AGENTS.md at the repo root before any change.
 > **Finish by yourself:** when the delivery check passes, commit after every stage, push and open the pull request. Never ask whether to

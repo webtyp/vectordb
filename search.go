@@ -160,7 +160,7 @@ func (s *Store) Close() error {
 		}
 		// Flushing hit counts must not mask a real close-time failure: the
 		// caller needs to know if the last write to the backend didn't land.
-		if err := s.cfg.Conn.Exec(pUpdate.Query, pUpdate.Args...); err != nil {
+		if _, err := s.cfg.Conn.Exec(pUpdate.Query, pUpdate.Args...); err != nil {
 			return err
 		}
 	}

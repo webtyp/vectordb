@@ -80,7 +80,7 @@ func (c *txRecorderConn) BeginTx() (storage.TxBoundExecutor, error) {
 	return &txRecorderBound{TxBoundExecutor: t, parent: c}, nil
 }
 
-func (c *txRecorderConn) Exec(query string, args ...any) error {
+func (c *txRecorderConn) Exec(query string, args ...any) (storage.Result, error) {
 	c.execs = append(c.execs, query)
 	return c.Conn.Exec(query, args...)
 }
@@ -90,7 +90,7 @@ type txRecorderBound struct {
 	parent *txRecorderConn
 }
 
-func (t *txRecorderBound) Exec(query string, args ...any) error {
+func (t *txRecorderBound) Exec(query string, args ...any) (storage.Result, error) {
 	t.parent.execs = append(t.parent.execs, query)
 	return t.TxBoundExecutor.Exec(query, args...)
 }

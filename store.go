@@ -83,7 +83,7 @@ func New(ctx *context.Context, cfg Config) (*Store, error) {
 		if err != nil {
 			return nil, err
 		}
-		if err := cfg.Conn.Exec(pCreateIdx.Query, pCreateIdx.Args...); err != nil {
+		if _, err := cfg.Conn.Exec(pCreateIdx.Query, pCreateIdx.Args...); err != nil {
 			return nil, err
 		}
 	} else if err != nil {
