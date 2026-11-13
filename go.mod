@@ -5,7 +5,7 @@ go 1.26.8
 require (
 	webtyp.com/context v0.0.23
 	webtyp.com/embed v0.4.0
-	webtyp.com/fmt v1.0.0
+	webtyp.com/fmt v1.0.1
 	webtyp.com/indexdb v0.7.15
 	webtyp.com/model v0.2.21
 	webtyp.com/storage v0.2.3
