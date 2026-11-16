@@ -7,7 +7,7 @@ require (
 	webtyp.com/embed v0.4.0
 	webtyp.com/fmt v1.0.2
 	webtyp.com/indexdb v0.7.15
-	webtyp.com/model v0.2.22
+	webtyp.com/model v0.2.23
 	webtyp.com/storage v0.2.3
 	webtyp.com/vector v0.1.1
 )
